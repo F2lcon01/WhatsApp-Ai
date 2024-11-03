@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>مولد رابط واتساب</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- إضافة Font Awesome للأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #ffffff;
+            font-family: 'Cairo', Tahoma, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            box-sizing: border-box;
+            max-width: 100%;
+            direction: rtl;
+        }
+        h1 {
+            margin-bottom: 30px;
+            font-size: 36px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: box-shadow 0.3s;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        input[type="text"]:focus {
+            box-shadow: 0 0 5px rgba(30, 190, 165, 0.5);
+        }
+        .button-group-main {
+            display: flex;
+            flex-direction: row-reverse;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            width: 100%;
+            max-width: 400px;
+        }
+        .button-group-main button {
+            flex: 1;
+            max-width: 200px;
+            margin: 5px;
+            padding: 10px 20px;
+            background-color: #1EBEA5;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .button-group-main button i {
+            margin-left: 8px;
+        }
+        .button-group-main button:hover {
+            background-color: #159e87;
+            transform: scale(1.05);
+        }
+        .result {
+            margin-top: 20px;
+            word-break: break-all;
+        }
+        .result a, .history a {
+            color: #1EBEA5;
+            text-decoration: underline;
+        }
+        .result a:hover, .history a:hover {
+            color: #159e87;
+        }
+        .history {
+            margin-top: 30px;
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+        .history h2 {
+            margin-bottom: 10px;
+        }
+        .history ol {
+            list-style-type: decimal;
+            padding: 0;
+            margin: 0;
+        }
+        .history li {
+            margin-bottom: 10px;
+            text-align: right;
+            direction: rtl;
+        }
+        .button-group {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: nowrap;
+            width: 100%;
+        }
+        .button-group .btn {
+            flex: 1;
+            max-width: none;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #ffffff;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .button-group .btn i {
+            margin-left: 5px;
+        }
+        .start-chat {
+            background-color: #25D366;
+        }
+        .start-chat:hover {
+            background-color: #1DA851;
+        }
+        .lookup {
+            background-color: #007bff;
+        }
+        .lookup:hover {
+            background-color: #0056b3;
+        }
+        .copy-number {
+            background-color: #ff9800;
+        }
+        .copy-number:hover {
+            background-color: #e68900;
+        }
+        .error {
+            color: #ff4d4d;
+            margin-top: 10px;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 28px;
+            }
+            .button-group-main button, .button-group .btn {
+                flex: 1 1 100%;
+                max-width: none;
+            }
+            .history li {
+                text-align: center;
+            }
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            .button-group .btn {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>مولد رابط واتساب</h1>
+    <input type="text" id="phoneNumber" placeholder="أدخل رقم هاتفك">
+    <div class="button-group-main">
+        <button onclick="generateWhatsAppLink()"><i class="fas fa-link"></i>إنشاء رابط واتساب</button>
+        <button onclick="clearInput()"><i class="fas fa-eraser"></i>مسح</button>
+        <button onclick="shareLink()"><i class="fas fa-share-alt"></i>مشاركة الرابط</button>
+    </div>
+
+    <div class="result" id="result"></div>
+    <div class="error" id="error"></div>
+
+    <div class="history" id="history">
+        <h2>آخر 5 روابط:</h2>
+        <ol id="historyList"></ol>
+    </div>
+
+    <script>
+        var linkHistory = [];
+
+        function convertArabicNumbers(str) {
+            var arabicNumbers = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+            var englishNumbers = ['0','1','2','3','4','5','6','7','8','9'];
+            var newStr = '';
+            for (var i = 0; i < str.length; i++) {
+                var char = str.charAt(i);
+                var index = arabicNumbers.indexOf(char);
+                if (index > -1) {
+                    char = englishNumbers[index];
+                }
+                newStr += char;
+            }
+            return newStr;
+        }
+
+        function normalizePhoneNumber(phone) {
+            // إزالة أي رموز غير رقمية
+            phone = phone.replace(/\D/g, '');
+
+            // إزالة بادئة '+' أو '00'
+            if (phone.startsWith('00')) {
+                phone = phone.substring(2);
+            } else if (phone.startsWith('0')) {
+                phone = phone.substring(1);
+            }
+
+            // إضافة رمز البلد إذا لم يكن موجودًا
+            if (!phone.startsWith('966')) {
+                phone = '966' + phone;
+            }
+
+            return phone;
+        }
+
+        function generateWhatsAppLink() {
+            var phone = document.getElementById('phoneNumber').value.trim();
+            phone = convertArabicNumbers(phone);
+
+            document.getElementById('error').innerText = '';
+            document.getElementById('result').innerText = '';
+
+            if (phone === '') {
+                document.getElementById('error').innerText = 'يرجى إدخال رقم الهاتف.';
+                return;
+            }
+
+            if (!/^\d+$/.test(phone)) {
+                document.getElementById('error').innerText = 'يرجى إدخال أرقام فقط.';
+                return;
+            }
+
+            var normalizedPhone = normalizePhoneNumber(phone);
+
+            if (normalizedPhone.startsWith('9665') && normalizedPhone.length === 12) {
+                // الرقم صحيح
+            } else {
+                document.getElementById('error').innerText = 'يرجى إدخال رقم جوال سعودي صحيح.';
+                return;
+            }
+
+            var whatsappLink = 'https://wa.me/' + normalizedPhone;
+
+            if (linkHistory.includes(whatsappLink)) {
+                var recordNumber = linkHistory.indexOf(whatsappLink) + 1;
+                document.getElementById('error').innerText = 'تم إنشاء رابط لهذا الرقم مسبقًا وهو موجود في السجل رقم ' + recordNumber + '.';
+                return;
+            }
+
+            var resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<a href="' + whatsappLink + '" target="_blank"><i class="fab fa-whatsapp"></i> ' + whatsappLink + '</a>';
+
+            addToHistory(whatsappLink);
+        }
+
+        function addToHistory(link) {
+            linkHistory.unshift(link);
+            if (linkHistory.length > 5) {
+                linkHistory.pop();
+            }
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            var historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+
+            linkHistory.forEach(function(link, index) {
+                var li = document.createElement('li');
+                li.innerHTML = '<a href="' + link + '" target="_blank">' + link + '</a>';
+
+                var buttonGroup = document.createElement('div');
+                buttonGroup.className = 'button-group';
+
+                var startChatLink = document.createElement('a');
+                startChatLink.href = link;
+                startChatLink.target = '_blank';
+                startChatLink.className = 'btn start-chat';
+                startChatLink.innerHTML = '<i class="fab fa-whatsapp"></i>ابدأ الدردشة';
+
+                var lookupLink = document.createElement('a');
+                lookupLink.href = 'https://storage.googleapis.com/ksa-n/index.html';
+                lookupLink.target = '_blank';
+                lookupLink.className = 'btn lookup';
+                lookupLink.innerHTML = '<i class="fas fa-search"></i>استعلام عن الرقم';
+
+                var copyLink = document.createElement('button');
+                copyLink.className = 'btn copy-number';
+                copyLink.innerHTML = '<i class="fas fa-copy"></i>نسخ الرقم';
+
+                copyLink.onclick = (function(link) {
+                    return function() {
+                        copyToClipboard(link.split('/').pop());
+                    };
+                })(link);
+
+                buttonGroup.appendChild(startChatLink);
+                buttonGroup.appendChild(lookupLink);
+                buttonGroup.appendChild(copyLink);
+                li.appendChild(buttonGroup);
+
+                historyList.appendChild(li);
+            });
+        }
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function() {
+                    alert('تم نسخ النص إلى الحافظة.');
+                }, function(err) {
+                    console.error('تعذر نسخ النص:', err);
+                    alert('حدث خطأ أثناء نسخ النص.');
+                });
+            } else {
+                var input = document.createElement('input');
+                input.setAttribute('value', text);
+                document.body.appendChild(input);
+                input.select();
+                input.setSelectionRange(0, 99999);
+
+                try {
+                    document.execCommand('copy');
+                    alert('تم نسخ النص إلى الحافظة.');
+                } catch (err) {
+                    console.error('تعذر نسخ النص:', err);
+                    alert('حدث خطأ أثناء نسخ النص.');
+                }
+
+                document.body.removeChild(input);
+            }
+        }
+
+        function shareLink() {
+            var resultDiv = document.getElementById('result');
+            var linkElement = resultDiv.querySelector('a');
+            if (linkElement) {
+                var link = linkElement.href;
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'رابط واتساب',
+                        text: 'انضم إلى الدردشة عبر واتساب:',
+                        url: link
+                    }).catch(function(error) {
+                        console.error('Error sharing:', error);
+                    });
+                } else {
+                    copyToClipboard(link);
+                    alert('تم نسخ الرابط إلى الحافظة.');
+                }
+            } else {
+                alert('يرجى إنشاء الرابط أولاً.');
+            }
+        }
+
+        function clearInput() {
+            document.getElementById('phoneNumber').value = '';
+            document.getElementById('result').innerText = '';
+            document.getElementById('error').innerText = '';
+        }
+    </script>
+</body>
+</html>
